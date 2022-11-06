@@ -1,0 +1,196 @@
+Sub populate()
+
+    ' use for loop to loop throught the whole workbook
+    Dim ws As Worksheet
+    For Each ws In Worksheets
+        
+        ' set initial value for ticker symbol
+        Dim ticker_symbol As String
+        
+        ' set initial value for open price
+        Dim open_price As Double
+        
+        ' set initial value for closing price
+        Dim close_price As Double
+        
+        ' set initial value for the total stock volume
+        Dim total_stock_volume As Double
+        
+        ' set the inital value for the output in the summary table
+        Dim summary_table_row As Integer
+        summary_table_row = 2
+        
+        ' print out the summary table
+        ws.Range("I1").Value = "Ticker"
+        ws.Range("J1").Value = "Yearly change"
+        ws.Range("K1").Value = "Percent Change"
+        ws.Range("L1").Value = "Total Stock Volume"
+        
+        ' set initial value for price change
+        Dim yearly_change As Double
+        
+        ' set inital value for the percent change
+        Dim percent_change As Double
+        
+        ' find the last used row of the worksheet
+        lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        
+        ' use for loop to go through each row of the table
+        For i = 2 To lastrow
+            
+            ' see if still within the same sticker symbol
+            If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1).Value Then
+                
+                ' set the tiker symbol
+                ticker_symbol = ws.Cells(i, 1).Value
+                
+                ' set the closing price
+                close_price = ws.Cells(i, 6).Value
+                
+                ' add the stock volume into total volume
+                total_stock_volume = total_stock_volume + ws.Cells(i, 7).Value
+                
+                ' calculate the change in price
+                yearly_change = close_price - open_price
+                
+                ' calculate the percent change in price
+                percent_change = yearly_change / open_price
+                
+                ' print the ticker symbol
+                ws.Range("I" & summary_table_row).Value = ticker_symbol
+                
+                ' print the yearly change
+                ws.Range("J" & summary_table_row).Value = yearly_change
+                
+                ' if the yearly change is positive we fill the box with green
+                If yearly_change > 0 Then
+                    ws.Range("J" & summary_table_row).Interior.ColorIndex = 4
+                
+                ' if the yearly change is negative we fill the box with red
+                ElseIf yearly_change < 0 Then
+                    ws.Range("J" & summary_table_row).Interior.ColorIndex = 3
+                
+                ' else we dont fill the box with yellow
+                Else
+                    ws.Range("J" & summary_table_row).Interior.ColorIndex = 5
+            
+                End If
+            
+                ' print the percent change
+                ws.Range("K" & summary_table_row).Value = percent_change
+                
+                ' formate the precent change cells into percentage
+                ws.Range("K" & summary_table_row).NumberFormat = "0.00%"
+                
+                ' print the total ticker volume
+                ws.Range("L" & summary_table_row).Value = total_stock_volume
+                    
+                ' reset the total volume
+                total_stock_volume = 0
+                
+                ' add 1 to the summary table position
+                summary_table_row = summary_table_row + 1
+            
+            ' find the first row of the ticker to set the opening price
+            ElseIf ws.Cells(i, 1).Value <> ws.Cells(i - 1, 1).Value Then
+                   
+                ' set the open price
+                open_price = ws.Cells(i, 3).Value
+                
+                ' add the ticker volume to the toal volume
+                total_stock_volume = total_stock_volume + ws.Cells(i, 7).Value
+            
+            ' else we just add the volume to total volume
+            Else
+                total_stock_volume = total_stock_volume + ws.Cells(i, 7).Value
+    
+            End If
+            
+        Next i
+        
+        ' print out the maximum table
+        ws.Range("O2").Value = "Greatest % increase"
+        ws.Range("O3").Value = "Greatest % decrease"
+        ws.Range("O4").Value = "Greatest total volume"
+        ws.Range("P1").Value = "Ticker"
+        ws.Range("Q1").Value = "Value"
+        
+        ' set the inital greatest increase value
+        Dim greatest_percent_increase As Double
+        greatest_percent_increase = 0
+        
+        ' set the inital greatest decrease value
+        Dim greatest_percent_decrease As Double
+        greatest_percent_decrease = 0
+        
+        ' set the inital greatest total volume value
+        Dim greatest_total_volume As Double
+        greatest_total_volume = 0
+        
+        ' set the inital greatest increase value ticker
+        Dim greatest_percent_increase_ticker As String
+        
+        ' set the inital greatest increase value
+        Dim greatest_percent_decrease_ticker As String
+        
+        ' set the inital greatest increase value
+        Dim greatest_total_volume_ticker As String
+        
+        ' find the length of the summary table
+        lastrow_summary = ws.Cells(Rows.Count, 9).End(xlUp).Row
+        
+        ' use for loop to go through each row of the summary table
+        For p = 2 To lastrow_summary
+            
+            ' if the percent change is bigger then the current greatest percent increase
+            If ws.Cells(p, 11).Value > greatest_percent_increase Then
+            
+                ' we update the greatest percent increase
+                greatest_percent_increase = ws.Cells(p, 11).Value
+                
+                ' we update the greatest percent increase ticker
+                greatest_percent_increase_ticker = ws.Cells(p, 9).Value
+                
+            ' if the percent change is smaller than the current greatest percent decrease
+            ElseIf ws.Cells(p, 11).Value < greatest_percent_decrease Then
+            
+                ' we update the greatest percent decrease
+                greatest_percent_decrease = ws.Cells(p, 11).Value
+                
+                ' we update the greatest percent decrease ticker
+                greatest_percent_decrease_ticker = ws.Cells(p, 9).Value
+                
+            End If
+            
+            ' if the percent change is bigger then the current greatest total volume
+            If ws.Cells(p, 12).Value > greatest_total_volume Then
+            
+                ' we update the greatest percent total volume
+                greatest_total_volume = ws.Cells(p, 12).Value
+                
+                ' we update the greatest percent total volume ticker
+                greatest_total_volume_ticker = ws.Cells(p, 9).Value ' i
+    
+            End If
+        
+        Next p
+        
+        ' print the values into output table
+        ws.Range("P2").Value = greatest_percent_increase_ticker
+        ws.Range("P3").Value = greatest_percent_decrease_ticker
+        ws.Range("P4").Value = greatest_total_volume_ticker
+        ws.Range("Q2").Value = greatest_percent_increase
+        ws.Range("Q3").Value = greatest_percent_decrease
+        ws.Range("Q4").Value = greatest_total_volume
+    
+        ' formate the percentage cells
+        ws.Range("Q2").NumberFormat = "0.00%"
+        ws.Range("Q3").NumberFormat = "0.00%"
+    
+        ' formate the width of columns to best fit
+        ws.Columns("A:X").AutoFit
+
+        
+    Next ws
+    
+End Sub
